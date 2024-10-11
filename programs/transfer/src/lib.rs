@@ -1,21 +1,20 @@
 use anchor_lang::prelude::*;
-use anchor_spl::token::{self, Token, TokenAccount, Transfer as SplTransfer};
 use anchor_lang::solana_program::system_instruction;
+use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
 declare_id!("AMXANSzuTYvXaYEC3Hwbn3Nx2fiGJFj9LEzXvVXvRQFX");
 
 #[program]
-pub mod transfer_sol {
-
+pub mod transfer {
     use super::*;
 
-    pub fn transfer_lamports(ctx: Context<TransferLamports>, amount: u64) -> Result<()> {
+    pub fn transfer_sol(ctx: Context<TransferSOL>, amount: u64) -> Result<()> {
         let from_account = &ctx.accounts.from;
         let to_account = &ctx.accounts.to;
 
         // Create the transfer instruction
         let transfer_instruction =
-            system_instruction::transfer(from_account.key, to_account.key, amount);
+            anchor_lang::solana_program::system_instruction::transfer(from_account.key, to_account.key, amount);
 
         // Invoke the transfer instruction
         anchor_lang::solana_program::program::invoke_signed(
@@ -31,20 +30,20 @@ pub mod transfer_sol {
         Ok(())
     }
 
-    pub fn transfer_spl_tokens(ctx: Context<TransferSpl>, amount: u64) -> Result<()> {
+    pub fn transfer_spl(ctx: Context<TransferSPL>, amount: u64) -> Result<()> {
         let destination = &ctx.accounts.to_ata;
         let source = &ctx.accounts.from_ata;
         let token_program = &ctx.accounts.token_program;
         let authority = &ctx.accounts.from;
 
         // Transfer tokens from taker to initializer
-        let cpi_accounts = SplTransfer {
+        let cpi_accounts = anchor_spl::token::Transfer {
             from: source.to_account_info().clone(),
             to: destination.to_account_info().clone(),
             authority: authority.to_account_info().clone(),
         };
         let cpi_program = token_program.to_account_info();
-        
+
         token::transfer(
             CpiContext::new(cpi_program, cpi_accounts),
             amount)?;
@@ -53,7 +52,7 @@ pub mod transfer_sol {
 }
 
 #[derive(Accounts)]
-pub struct TransferLamports<'info> {
+pub struct TransferSOL<'info> {
     #[account(mut)]
     pub from: Signer<'info>,
     /// CHECK: This is not dangerous because we don't read or write from this account
@@ -63,7 +62,7 @@ pub struct TransferLamports<'info> {
 }
 
 #[derive(Accounts)]
-pub struct TransferSpl<'info> {
+pub struct TransferSPL<'info> {
     pub from: Signer<'info>,
     #[account(mut)]
     pub from_ata: Account<'info, TokenAccount>,
@@ -71,6 +70,3 @@ pub struct TransferSpl<'info> {
     pub to_ata: Account<'info, TokenAccount>,
     pub token_program: Program<'info, Token>,
 }
-
-
-

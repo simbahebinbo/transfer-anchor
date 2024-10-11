@@ -5,7 +5,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-transfer_sol = "AMXANSzuTYvXaYEC3Hwbn3Nx2fiGJFj9LEzXvVXvRQFX"
+transfer = "AMXANSzuTYvXaYEC3Hwbn3Nx2fiGJFj9LEzXvVXvRQFX"
 
 [registry]
 url = "https://api.apr.dev"
